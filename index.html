@@ -510,7 +510,8 @@ const CONFIG = {
   payoff: {
     youtube: {
       videoId: "jH4YI1faPwU",
-      listId: "PLWthMndjgpFIieKenym2a5BtYpf52eRX8"
+      listId: "PLWthMndjgpFIieKenym2a5BtYpf52eRX8",
+      startSeconds: 35
     },
     photo: {
       src: "fiancee.jpeg",
@@ -530,7 +531,7 @@ const CONFIG = {
 
   finalMessage: {
     delayMs: 20000,
-    text: "From the moment I met you, every ordinary day started turning into an adventure I never knew I needed. You make me laugh harder than anyone else on this planet, and somehow you also make me want to be a better, softer, braver version of myself. I fall in love with you again in a thousand tiny ways, every single day. I can't wait to spend the rest of my life being your favorite dork and your biggest fan.",
+    text: "To the love of my life, the future mother of my kids and the woman I want to spend the rest of my existence with... I love you my most beautiful babytas, you are the love of my life, my other half, the soul I want to be attached to for the rest of eternity. I can't wait to spend this life with you, with the person that makes me happy, makes me a better man, and turns my life into everything I have ever want. I love you <3",
     playAgainText: "Play Again 💫"
   }
 };
@@ -695,6 +696,13 @@ function handleQuizAnswer(chosenBtn, opt) {
   quizIndex++;
   $('quiz-score').textContent = `${CONFIG.quiz.startingLabel}: ${quizIndex}/${quizIndex} (100% · Suspiciously Perfect)`;
 
+  if (quizIndex >= CONFIG.quiz.questions.length) {
+    // Last question just got submitted — kick off the song right now (still
+    // inside this click's user gesture) so it's already playing by the time
+    // the payoff screen appears, instead of waiting for another click.
+    attemptPlay();
+  }
+
   const continueBtn = $('btn-quiz-continue');
   continueBtn.style.display = 'inline-block';
   continueBtn.textContent = quizIndex < CONFIG.quiz.questions.length ? 'Next →' : 'See Your Results →';
@@ -725,17 +733,32 @@ window.onYouTubeIframeAPIReady = function () {
       listType: 'playlist',
       autoplay: 0,
       controls: 0,
-      playsinline: 1
+      playsinline: 1,
+      start: CONFIG.payoff.youtube.startSeconds
     },
     videoId: CONFIG.payoff.youtube.videoId,
     events: {
       onReady: function () {
         ytReady = true;
         if (pendingAutoplay) attemptPlay();
+      },
+      onStateChange: function (e) {
+        // playerVars.start is unreliable once a list/listType is attached,
+        // so force the seek once playback actually begins. Seeking the
+        // instant PLAYING fires is too early for the player to honor, so
+        // give it a brief moment first.
+        if (e.data === YT.PlayerState.PLAYING && !hasSeekedToStart) {
+          hasSeekedToStart = true;
+          setTimeout(() => {
+            try { ytPlayer.seekTo(CONFIG.payoff.youtube.startSeconds, true); } catch (err) {}
+          }, 300);
+        }
       }
     }
   });
 };
+
+let hasSeekedToStart = false;
 
 function attemptPlay() {
   if (!ytPlayer || !ytReady) { pendingAutoplay = true; return; }
