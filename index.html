@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>A Very Important Question</title>
+
+<!-- Google Fonts: Baloo 2 (goofy display) + Playfair Display (sincere serif), both with system fallbacks -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================= CSS VARIABLES / THEME ============================= */
+:root {
+  --cream: #fdf3e6;
+  --cream-2: #fbe8d3;
+  --gold: #e6a445;
+  --gold-2: #c9832f;
+  --rose: #d98a8f;
+  --rose-2: #c96b74;
+  --plum: #4a2545;
+  --plum-2: #331833;
+  --plum-deep: #241123;
+  --ink: #3a2038;
+  --font-goofy: 'Baloo 2', 'Comic Sans MS', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--plum-deep), var(--plum) 45%, var(--rose-2) 100%);
+  font-family: var(--font-goofy);
+  color: var(--cream);
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================= SCREEN SCAFFOLDING ============================= */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.screen.active {
+  display: flex;
+  opacity: 1;
+}
+
+.big-emoji { font-size: 3rem; margin-bottom: 8px; }
+
+/* ============================= LANDING SCREEN ============================= */
+#screen-landing h1 {
+  font-size: clamp(2rem, 9vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0 0 10px;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  max-width: 90vw;
+}
+#screen-landing .subtext {
+  font-size: clamp(1rem, 3.5vw, 1.25rem);
+  opacity: 0.85;
+  margin: 0 0 40px;
+  max-width: 520px;
+}
+.dodge-zone {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  height: 160px;
+  margin-bottom: 18px;
+}
+#btn-landing {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 22px 44px;
+  font-family: var(--font-goofy);
+  font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+  font-weight: 700;
+  border: none;
+  border-radius: 100px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-2));
+  color: var(--plum-deep);
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 4px rgba(255,255,255,0.15) inset;
+  will-change: transform;
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+#btn-landing:active { transform: translate(-50%, -50%) scale(0.94); }
+.fine-print {
+  max-width: 480px;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  opacity: 0.55;
+  font-family: Georgia, serif;
+  font-style: italic;
+}
+
+/* ============================= LOADING SCREEN ============================= */
+#screen-loading h2 {
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  margin-bottom: 28px;
+  min-height: 2.4em;
+}
+.progress-track {
+  width: min(80vw, 420px);
+  height: 22px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.15);
+  overflow: hidden;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.1) inset;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 20px;
+  background: linear-gradient(90deg, var(--rose), var(--gold));
+  transition: width 0.3s ease;
+}
+#loading-percent {
+  margin-top: 12px;
+  font-size: 1.1rem;
+  opacity: 0.8;
+}
+
+/* ============================= QUIZ SCREEN ============================= */
+#screen-quiz {
+  justify-content: flex-start;
+  padding-top: 8vh;
+}
+.quiz-card {
+  width: min(90vw, 560px);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 24px;
+  padding: 28px 22px;
+  backdrop-filter: blur(4px);
+}
+#quiz-score {
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+  opacity: 0.85;
+  font-weight: 700;
+  color: var(--gold);
+}
+#quiz-question {
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.quiz-option {
+  padding: 14px 18px;
+  font-family: var(--font-goofy);
+  font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+  color: var(--cream);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.quiz-option:active { transform: scale(0.98); }
+.quiz-option.chosen {
+  background: linear-gradient(135deg, var(--rose), var(--gold-2));
+  border-color: transparent;
+  color: var(--plum-deep);
+  font-weight: 700;
+}
+#quiz-feedback {
+  margin-top: 18px;
+  min-height: 1.6em;
+  font-style: italic;
+  color: var(--gold);
+  font-weight: 700;
+}
+.btn-continue {
+  margin-top: 20px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 100px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-2));
+  color: var(--plum-deep);
+  font-family: var(--font-goofy);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  display: none;
+}
+
+/* ============================= PAYOFF SCREEN ============================= */
+#screen-payoff {
+  overflow: hidden;
+}
+#hearts-layer, #confetti-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+.floating-heart, .confetti-piece {
+  position: absolute;
+  will-change: transform;
+  pointer-events: none;
+}
+#photo-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 150px;
+  height: 150px;
+  will-change: transform;
+  z-index: 4;
+}
+#photo-wrap img, #photo-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 0 40px 10px rgba(230,164,69,0.55), 0 0 0 4px rgba(255,255,255,0.5);
+  display: block;
+}
+#photo-fallback {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  background: rgba(255,255,255,0.08);
+}
+#caption-bubble {
+  position: absolute;
+  z-index: 6;
+  max-width: 220px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.92);
+  color: var(--plum-2);
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  transform: translate(-50%, -120%);
+  pointer-events: none;
+}
+#mute-toggle {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: var(--cream);
+  font-size: 1.3rem;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+#yt-player-holder {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+#btn-tap-music {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  padding: 10px 20px;
+  border-radius: 100px;
+  border: none;
+  background: rgba(255,255,255,0.85);
+  color: var(--plum-deep);
+  font-family: var(--font-goofy);
+  font-weight: 700;
+  cursor: pointer;
+  display: none;
+}
+#btn-read-this {
+  position: absolute;
+  bottom: 22px;
+  right: 18px;
+  z-index: 10;
+  padding: 12px 22px;
+  border-radius: 100px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), var(--rose));
+  color: var(--plum-deep);
+  font-family: var(--font-goofy);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+
+/* ============================= FINAL MESSAGE CARD ============================= */
+#final-message {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s ease;
+  background: radial-gradient(circle at center, rgba(36,17,35,0.55), rgba(36,17,35,0.85));
+}
+#final-message.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.final-card {
+  max-width: 560px;
+  width: min(92vw, 560px);
+  background: linear-gradient(160deg, var(--cream), var(--cream-2));
+  color: var(--ink);
+  border-radius: 22px;
+  padding: 40px 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  font-family: var(--font-serif);
+}
+.final-card p {
+  font-size: clamp(1.05rem, 3.5vw, 1.3rem);
+  line-height: 1.7;
+  font-style: italic;
+  margin: 0 0 26px;
+}
+#btn-play-again {
+  padding: 12px 26px;
+  border: none;
+  border-radius: 100px;
+  background: linear-gradient(135deg, var(--rose), var(--gold-2));
+  color: var(--plum-deep);
+  font-family: var(--font-goofy);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* ============================= REDUCED MOTION ============================= */
+@media (prefers-reduced-motion: reduce) {
+  .screen { transition: opacity 0.3s ease; }
+}
+
+/* ============================= SMALL PHONE TUNING ============================= */
+@media (max-width: 420px) {
+  #photo-wrap { width: 110px; height: 110px; }
+  .fine-print { font-size: 0.68rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===================== LANDING SCREEN ===================== -->
+  <section id="screen-landing" class="screen active">
+    <h1 id="landing-headline"></h1>
+    <p class="subtext" id="landing-subtext"></p>
+    <div class="dodge-zone">
+      <button id="btn-landing"></button>
+    </div>
+    <p class="fine-print" id="landing-disclaimer"></p>
+  </section>
+
+  <!-- ===================== FAKE LOADING SCREEN ===================== -->
+  <section id="screen-loading" class="screen">
+    <h2 id="loading-message"></h2>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div id="loading-percent">0%</div>
+  </section>
+
+  <!-- ===================== QUIZ SCREEN ===================== -->
+  <section id="screen-quiz" class="screen">
+    <div class="quiz-card">
+      <div id="quiz-score"></div>
+      <div id="quiz-question"></div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div id="quiz-feedback"></div>
+      <button class="btn-continue" id="btn-quiz-continue">Next →</button>
+    </div>
+  </section>
+
+  <!-- ===================== PAYOFF SCREEN ===================== -->
+  <section id="screen-payoff" class="screen">
+    <div id="hearts-layer"></div>
+    <div id="confetti-layer"></div>
+
+    <div id="photo-wrap">
+      <img id="photo-img" src="fiancee.jpeg" alt="The most beautiful woman alive">
+      <div id="photo-fallback">💖</div>
+    </div>
+    <div id="caption-bubble"></div>
+
+    <button id="mute-toggle" title="Mute / Unmute">🔊</button>
+    <button id="btn-tap-music">🔊 Tap for music</button>
+    <button id="btn-read-this">💌 Read This</button>
+
+    <!-- Hidden YouTube IFrame API player -->
+    <div id="yt-player-holder"><div id="yt-player"></div></div>
+  </section>
+
+  <!-- ===================== FINAL MESSAGE ===================== -->
+  <div id="final-message">
+    <div class="final-card">
+      <p id="final-message-text"></p>
+      <button id="btn-play-again">Play Again 💫</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG — edit every bit of wording / IDs here, nothing else needed.
+   ===================================================================== */
+const CONFIG = {
+  landing: {
+    headline: "DO NOT PRESS THIS BUTTON",
+    subtext: "This button has been legally classified as 'extremely tempting.' You have been warned.",
+    buttonText: "DO NOT PRESS",
+    disclaimer: "By pressing this button you agree to the Terms & Conditions of Being Loved Forever, forfeit your right to remain unmarried, and acknowledge that all snacks in this household are now community property. Side effects may include butterflies, giggling, and mild regret about that time you ate her leftovers without asking."
+  },
+
+  loading: {
+    messages: [
+      "Calculating love...",
+      "Consulting the horses...",
+      "Tuning banjo...",
+      "Bribing Cupid...",
+      "Aligning the stars (they were being difficult)...",
+      "Double-checking she's the one (yep, still the one)...",
+      "Warming up the fiddle...",
+      "Asking the dog for his blessing..."
+    ],
+    totalDurationMs: 5000,
+    stallPercent: 99,
+    stallDurationMs: 1400
+  },
+
+  quiz: {
+    startingLabel: "Score",
+    questions: [
+      {
+        question: "Who's the funniest in the relationship?",
+        options: [
+          { text: "The Smallest Babytas", response: "Correct! She's hilarious and you know it." },
+          { text: "The Biggest Babytas", response: "Also correct! (Although some would say otherwise)." },
+          { text: "It's a tie, we're both comedic legends", response: "100% correct! Comedy Olympics, gold medal, both of us." }
+        ]
+      },
+      {
+        question: "Who farts the most?",
+        options: [
+          { text: "The Smallest Babytas", response: "Correct! Silent but deadly, allegedly." },
+          { text: "The Biggest Babytas", response: "Correct! But you still love me." },
+          { text: "We refuse to answer on religious grounds", response: "Also correct! A wise and diplomatic choice." }
+        ]
+      },
+      {
+        question: "Who has the biggest... assets? (real estate portfolio, that is)",
+        options: [
+          { text: "The Smallest Babytas", response: "Correct! A truly impressive portfolio." },
+          { text: "The Biggest Babytas", response: "Correct! Diversified and thriving." },
+          { text: "This is a trick question and love wins either way", response: "Extremely correct! You get bonus points for that one." }
+        ]
+      }
+    ]
+  },
+
+  payoff: {
+    youtube: {
+      videoId: "jH4YI1faPwU",
+      listId: "PLWthMndjgpFIieKenym2a5BtYpf52eRX8"
+    },
+    photo: {
+      src: "fiancee.jpeg",
+      alt: "The most beautiful woman alive"
+    },
+    captions: [
+      "The face that started this whole thing 🥹",
+      "Certified 10/10, no notes",
+      "My favorite person in the world",
+      "She said yes and I still can't believe it",
+      "Somehow gets more beautiful every day",
+      "The real prize of this whole quiz"
+    ],
+    readButtonText: "💌 Read This",
+    tapMusicText: "🔊 Tap for music"
+  },
+
+  finalMessage: {
+    delayMs: 20000,
+    text: "From the moment I met you, every ordinary day started turning into an adventure I never knew I needed. You make me laugh harder than anyone else on this planet, and somehow you also make me want to be a better, softer, braver version of myself. I fall in love with you again in a thousand tiny ways, every single day. I can't wait to spend the rest of my life being your favorite dork and your biggest fan.",
+    playAgainText: "Play Again 💫"
+  }
+};
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+let ytPlayer = null;
+let ytReady = false;
+let pendingAutoplay = false;
+
+let heartsRafId = null;
+let photoRafId = null;
+let heartSpawnTimer = null;
+let captionTimer = null;
+let calmMode = false;
+
+let quizIndex = 0;
+let quizScore = 0;
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+function $(id) { return document.getElementById(id); }
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+/* =====================================================================
+   LANDING SCREEN — dodging button
+   ===================================================================== */
+function initLanding() {
+  $('landing-headline').textContent = CONFIG.landing.headline;
+  $('landing-subtext').textContent = CONFIG.landing.subtext;
+  $('btn-landing').textContent = CONFIG.landing.buttonText;
+  $('landing-disclaimer').textContent = CONFIG.landing.disclaimer;
+
+  const btn = $('btn-landing');
+  const zone = document.querySelector('.dodge-zone');
+  let dodgeCount = 0;
+  const maxDodges = isTouchDevice || prefersReducedMotion ? 0 : 2;
+
+  function dodge() {
+    const zoneRect = zone.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const maxX = Math.max(0, (zoneRect.width - btnRect.width) / 2 - 10);
+    const maxY = Math.max(0, (zoneRect.height - btnRect.height) / 2 - 10);
+    const dx = rand(-maxX, maxX);
+    const dy = rand(-maxY, maxY);
+    btn.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  }
+
+  btn.addEventListener('mouseenter', () => {
+    if (dodgeCount < maxDodges) {
+      dodgeCount++;
+      dodge();
+    }
+  });
+
+  btn.addEventListener('click', goToLoading);
+}
+
+/* =====================================================================
+   FAKE LOADING SCREEN
+   ===================================================================== */
+function goToLoading() {
+  showScreen('screen-loading');
+  const fill = $('progress-fill');
+  const percentLabel = $('loading-percent');
+  const messageLabel = $('loading-message');
+  fill.style.width = '0%';
+  percentLabel.textContent = '0%';
+
+  let msgIdx = 0;
+  messageLabel.textContent = CONFIG.loading.messages[0];
+  const msgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % CONFIG.loading.messages.length;
+    messageLabel.textContent = CONFIG.loading.messages[msgIdx];
+  }, 750);
+
+  const stallAt = CONFIG.loading.stallPercent;
+  const rampDuration = CONFIG.loading.totalDurationMs - CONFIG.loading.stallDurationMs;
+  const startTime = performance.now();
+  let stalled = false;
+  let stallStart = 0;
+
+  function tick(now) {
+    if (!stalled) {
+      const elapsed = now - startTime;
+      const pct = Math.min(stallAt, (elapsed / rampDuration) * stallAt);
+      fill.style.width = pct + '%';
+      percentLabel.textContent = Math.floor(pct) + '%';
+      if (pct >= stallAt) {
+        stalled = true;
+        stallStart = now;
+        clearInterval(msgInterval);
+        messageLabel.textContent = "Hmm. One second.";
+      }
+      requestAnimationFrame(tick);
+    } else {
+      const stallElapsed = now - stallStart;
+      if (stallElapsed >= CONFIG.loading.stallDurationMs) {
+        fill.style.width = '100%';
+        percentLabel.textContent = '100%';
+        clearInterval(msgInterval);
+        setTimeout(() => { goToQuiz(); }, 500);
+      } else {
+        requestAnimationFrame(tick);
+      }
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* =====================================================================
+   QUIZ SCREEN
+   ===================================================================== */
+function goToQuiz() {
+  quizIndex = 0;
+  quizScore = 0;
+  showScreen('screen-quiz');
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const q = CONFIG.quiz.questions[quizIndex];
+  $('quiz-question').textContent = `Q${quizIndex + 1}. ${q.question}`;
+  $('quiz-feedback').textContent = '';
+  $('btn-quiz-continue').style.display = 'none';
+  updateScoreLabel();
+
+  const optionsWrap = $('quiz-options');
+  optionsWrap.innerHTML = '';
+  q.options.forEach((opt) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = opt.text;
+    btn.addEventListener('click', () => handleQuizAnswer(btn, opt));
+    optionsWrap.appendChild(btn);
+  });
+}
+
+function updateScoreLabel() {
+  const total = quizIndex; // questions answered so far
+  $('quiz-score').textContent = total === 0
+    ? `${CONFIG.quiz.startingLabel}: —`
+    : `${CONFIG.quiz.startingLabel}: ${total}/${total} (100% · Suspiciously Perfect)`;
+}
+
+function handleQuizAnswer(chosenBtn, opt) {
+  document.querySelectorAll('.quiz-option').forEach(b => {
+    b.disabled = true;
+    if (b === chosenBtn) b.classList.add('chosen');
+  });
+  $('quiz-feedback').textContent = opt.response;
+  quizScore++;
+  quizIndex++;
+  $('quiz-score').textContent = `${CONFIG.quiz.startingLabel}: ${quizIndex}/${quizIndex} (100% · Suspiciously Perfect)`;
+
+  const continueBtn = $('btn-quiz-continue');
+  continueBtn.style.display = 'inline-block';
+  continueBtn.textContent = quizIndex < CONFIG.quiz.questions.length ? 'Next →' : 'See Your Results →';
+  continueBtn.onclick = () => {
+    if (quizIndex < CONFIG.quiz.questions.length) {
+      renderQuizQuestion();
+    } else {
+      goToPayoff();
+    }
+  };
+}
+
+/* =====================================================================
+   YOUTUBE IFRAME API — created early so it's ready by the time we need it
+   ===================================================================== */
+function loadYouTubeAPI() {
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(tag);
+}
+
+window.onYouTubeIframeAPIReady = function () {
+  ytPlayer = new YT.Player('yt-player', {
+    height: '1',
+    width: '1',
+    playerVars: {
+      list: CONFIG.payoff.youtube.listId,
+      listType: 'playlist',
+      autoplay: 0,
+      controls: 0,
+      playsinline: 1
+    },
+    videoId: CONFIG.payoff.youtube.videoId,
+    events: {
+      onReady: function () {
+        ytReady = true;
+        if (pendingAutoplay) attemptPlay();
+      }
+    }
+  });
+};
+
+function attemptPlay() {
+  if (!ytPlayer || !ytReady) { pendingAutoplay = true; return; }
+  try {
+    ytPlayer.playVideo();
+  } catch (e) { /* ignore */ }
+  setTimeout(() => {
+    if (ytPlayer && ytPlayer.getPlayerState && ytPlayer.getPlayerState() !== 1) {
+      $('btn-tap-music').style.display = 'inline-block';
+    }
+  }, 1200);
+}
+
+$('btn-tap-music').addEventListener('click', () => {
+  if (ytPlayer) {
+    try { ytPlayer.unMute(); ytPlayer.playVideo(); } catch (e) {}
+  }
+  $('btn-tap-music').style.display = 'none';
+});
+
+$('mute-toggle').addEventListener('click', () => {
+  if (!ytPlayer) return;
+  if (ytPlayer.isMuted()) {
+    ytPlayer.unMute();
+    $('mute-toggle').textContent = '🔊';
+  } else {
+    ytPlayer.mute();
+    $('mute-toggle').textContent = '🔇';
+  }
+});
+
+/* =====================================================================
+   PAYOFF SCREEN
+   ===================================================================== */
+function goToPayoff() {
+  showScreen('screen-payoff');
+  calmMode = false;
+  attemptPlay(); // user-gesture-adjacent: called from click handler chain
+  startPhotoBounce();
+  startHearts();
+  burstConfetti(120);
+  startCaptions();
+  $('btn-read-this').style.display = 'inline-block';
+
+  setTimeout(showFinalMessage, CONFIG.finalMessage.delayMs);
+}
+
+/* --- Photo fallback if image fails to load --- */
+$('photo-img').addEventListener('error', () => {
+  $('photo-img').style.display = 'none';
+  $('photo-fallback').style.display = 'flex';
+});
+
+/* --- DVD-screensaver style bounce --- */
+function startPhotoBounce() {
+  const wrap = $('photo-wrap');
+  const payoffScreen = $('screen-payoff');
+  let bounds = payoffScreen.getBoundingClientRect();
+  const size = wrap.offsetWidth;
+
+  let x = rand(0, Math.max(1, bounds.width - size));
+  let y = rand(0, Math.max(1, bounds.height - size));
+  const speedMult = prefersReducedMotion ? 0.35 : 1;
+  let vx = rand(1.2, 2.2) * speedMult;
+  let vy = rand(1.2, 2.2) * speedMult;
+  let angle = 0;
+  let wobbleT = 0;
+
+  function frame() {
+    bounds = payoffScreen.getBoundingClientRect();
+    const maxX = Math.max(1, bounds.width - size);
+    const maxY = Math.max(1, bounds.height - size);
+
+    x += vx;
+    y += vy;
+    wobbleT += 0.05;
+
+    if (x <= 0) { x = 0; vx = Math.abs(vx); }
+    if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
+    if (y <= 0) { y = 0; vy = Math.abs(vy); }
+    if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
+
+    angle += (prefersReducedMotion ? 0.15 : 0.4);
+    const wobble = Math.sin(wobbleT) * (prefersReducedMotion ? 1.5 : 4);
+    const scaleWobble = 1 + Math.sin(wobbleT * 1.3) * (prefersReducedMotion ? 0.01 : 0.03);
+
+    wrap.style.transform =
+      `translate3d(${x}px, ${y}px, 0) rotate(${angle % 360}deg) scale(${scaleWobble})`;
+    wrap.dataset.cx = x + size / 2;
+    wrap.dataset.cy = y + size / 2;
+
+    photoRafId = requestAnimationFrame(frame);
+  }
+  photoRafId = requestAnimationFrame(frame);
+}
+
+/* --- Floating hearts rising from the bottom --- */
+function spawnHeart(originX, originY, burst) {
+  const layer = $('hearts-layer');
+  const el = document.createElement('div');
+  el.className = 'floating-heart';
+  const emojis = ['💖', '💗', '💕', '❤️', '💘', '🧡'];
+  el.textContent = emojis[Math.floor(rand(0, emojis.length))];
+  const size = rand(16, 40);
+  el.style.fontSize = size + 'px';
+  layer.appendChild(el);
+
+  const bounds = layer.getBoundingClientRect();
+  let x = originX !== undefined ? originX : rand(0, bounds.width);
+  let y = originY !== undefined ? originY : bounds.height + 20;
+
+  const speedMult = (prefersReducedMotion ? 0.4 : 1) * (calmMode ? 0.6 : 1);
+  const speed = rand(0.6, 1.6) * speedMult;
+  const drift = rand(-0.6, 0.6);
+  const driftFreq = rand(0.01, 0.03);
+  let burstVX = 0, burstVY = 0;
+  if (burst) {
+    const a = rand(0, Math.PI * 2);
+    const s = rand(2, 6);
+    burstVX = Math.cos(a) * s;
+    burstVY = Math.sin(a) * s;
+  }
+
+  let t = 0;
+  let life = 0;
+  const maxLife = burst ? rand(60, 100) : 99999;
+
+  function frame() {
+    t += driftFreq;
+    life++;
+    if (burst) {
+      x += burstVX;
+      y += burstVY;
+      burstVX *= 0.94;
+      burstVY *= 0.94;
+      el.style.opacity = Math.max(0, 1 - life / maxLife);
+    } else {
+      y -= speed;
+      x += Math.sin(t) * drift;
+    }
+    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+
+    const outOfView = y < -60 || y > bounds.height + 80 || x < -60 || x > bounds.width + 60;
+    if ((burst && life >= maxLife) || (!burst && outOfView)) {
+      el.remove();
+    } else {
+      requestAnimationFrame(frame);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function startHearts() {
+  function loopSpawn() {
+    spawnHeart();
+    const delay = calmMode ? rand(500, 900) : rand(180, 420);
+    heartSpawnTimer = setTimeout(loopSpawn, delay);
+  }
+  loopSpawn();
+
+  $('screen-payoff').addEventListener('click', (e) => {
+    const count = prefersReducedMotion ? 5 : 12;
+    for (let i = 0; i < count; i++) spawnHeart(e.clientX, e.clientY, true);
+  });
+  $('screen-payoff').addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    if (!t) return;
+    const count = prefersReducedMotion ? 5 : 12;
+    for (let i = 0; i < count; i++) spawnHeart(t.clientX, t.clientY, true);
+  }, { passive: true });
+}
+
+/* --- Confetti burst on entry --- */
+function burstConfetti(count) {
+  if (prefersReducedMotion) count = Math.floor(count / 4);
+  const layer = $('confetti-layer');
+  const colors = ['#e6a445', '#d98a8f', '#fdf3e6', '#c9832f', '#c96b74'];
+  const bounds = layer.getBoundingClientRect();
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    const w = rand(6, 12);
+    const h = rand(8, 16);
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    el.style.background = colors[Math.floor(rand(0, colors.length))];
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(el);
+
+    let x = rand(0, bounds.width);
+    let y = rand(-40, -10);
+    const vy = rand(2, 5);
+    let vx = rand(-1.5, 1.5);
+    let rot = rand(0, 360);
+    const rotSpeed = rand(-8, 8);
+    let life = 0;
+    const maxLife = rand(140, 220);
+
+    (function frame() {
+      y += vy;
+      x += vx;
+      rot += rotSpeed;
+      life++;
+      el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg)`;
+      el.style.opacity = Math.max(0, 1 - life / maxLife);
+      if (life < maxLife && y < bounds.height + 40) {
+        requestAnimationFrame(frame);
+      } else {
+        el.remove();
+      }
+    })();
+  }
+}
+
+/* --- Rotating captions near the photo --- */
+function startCaptions() {
+  const bubble = $('caption-bubble');
+  const captions = CONFIG.payoff.captions;
+  let idx = 0;
+
+  function showNext() {
+    const wrap = $('photo-wrap');
+    const cx = parseFloat(wrap.dataset.cx || 0);
+    const cy = parseFloat(wrap.dataset.cy || 0);
+    bubble.style.left = cx + 'px';
+    bubble.style.top = Math.max(40, cy - 90) + 'px';
+    bubble.textContent = captions[idx % captions.length];
+    idx++;
+    bubble.style.opacity = '1';
+
+    setTimeout(() => { bubble.style.opacity = '0'; }, 2600);
+  }
+
+  showNext();
+  captionTimer = setInterval(showNext, 4000);
+}
+
+/* --- Read This / final message --- */
+$('btn-read-this').addEventListener('click', showFinalMessage);
+
+let finalShown = false;
+function showFinalMessage() {
+  if (finalShown) return;
+  finalShown = true;
+  calmMode = true;
+  $('final-message-text').textContent = CONFIG.finalMessage.text;
+  $('final-message').classList.add('show');
+}
+
+/* =====================================================================
+   PLAY AGAIN — full reset back to landing
+   ===================================================================== */
+$('btn-play-again').addEventListener('click', resetToLanding);
+
+function resetToLanding() {
+  if (ytPlayer) {
+    try { ytPlayer.stopVideo(); } catch (e) {}
+  }
+  if (heartSpawnTimer) clearTimeout(heartSpawnTimer);
+  if (captionTimer) clearInterval(captionTimer);
+  if (photoRafId) cancelAnimationFrame(photoRafId);
+
+  $('hearts-layer').innerHTML = '';
+  $('confetti-layer').innerHTML = '';
+  $('final-message').classList.remove('show');
+  finalShown = false;
+  calmMode = false;
+  $('btn-tap-music').style.display = 'none';
+  $('caption-bubble').style.opacity = '0';
+  $('photo-img').style.display = 'block';
+  $('photo-fallback').style.display = 'none';
+
+  $('btn-landing').style.transform = 'translate(-50%, -50%)';
+
+  showScreen('screen-landing');
+}
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+initLanding();
+loadYouTubeAPI();
+</script>
+</body>
+</html>
