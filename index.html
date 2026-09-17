@@ -106,7 +106,7 @@ html, body {
   cursor: pointer;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 4px rgba(255,255,255,0.15) inset;
   will-change: transform;
-  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1);
+  transition: transform 0.1s cubic-bezier(.2,.8,.2,1);
   white-space: nowrap;
 }
 #btn-landing:active { transform: translate(-50%, -50%) scale(0.94); }
@@ -568,6 +568,17 @@ function showScreen(id) {
 /* =====================================================================
    LANDING SCREEN — dodging button
    ===================================================================== */
+const LANDING_MAX_DODGES = (isTouchDevice || prefersReducedMotion) ? 0 : 2;
+const LANDING_DODGE_RADIUS = 150; // px — how close the pointer can get before the button flees
+let landingDodgeCount = 0;
+let landingPointerWasNear = false; // edge-triggers the dodge so one continuous approach = one dodge
+
+function resetLandingButton() {
+  landingDodgeCount = 0;
+  landingPointerWasNear = false;
+  $('btn-landing').style.transform = 'translate(-50%, -50%)';
+}
+
 function initLanding() {
   $('landing-headline').textContent = CONFIG.landing.headline;
   $('landing-subtext').textContent = CONFIG.landing.subtext;
@@ -576,25 +587,52 @@ function initLanding() {
 
   const btn = $('btn-landing');
   const zone = document.querySelector('.dodge-zone');
-  let dodgeCount = 0;
-  const maxDodges = isTouchDevice || prefersReducedMotion ? 0 : 2;
 
-  function dodge() {
+  // Jump to whichever of several random spots ends up FARTHEST from the
+  // pointer, so every dodge is a real escape and not a lateral shuffle
+  // the cursor can just follow.
+  function dodgeAwayFrom(pointerX, pointerY) {
     const zoneRect = zone.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
     const maxX = Math.max(0, (zoneRect.width - btnRect.width) / 2 - 10);
     const maxY = Math.max(0, (zoneRect.height - btnRect.height) / 2 - 10);
-    const dx = rand(-maxX, maxX);
-    const dy = rand(-maxY, maxY);
-    btn.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    const zoneCx = zoneRect.left + zoneRect.width / 2;
+    const zoneCy = zoneRect.top + zoneRect.height / 2;
+
+    let bestDx = 0, bestDy = 0, bestDist = -1;
+    for (let i = 0; i < 10; i++) {
+      const dx = rand(-maxX, maxX);
+      const dy = rand(-maxY, maxY);
+      const dist = Math.hypot((zoneCx + dx) - pointerX, (zoneCy + dy) - pointerY);
+      if (dist > bestDist) { bestDist = dist; bestDx = dx; bestDy = dy; }
+    }
+    btn.style.transform = `translate(calc(-50% + ${bestDx}px), calc(-50% + ${bestDy}px))`;
   }
 
-  btn.addEventListener('mouseenter', () => {
-    if (dodgeCount < maxDodges) {
-      dodgeCount++;
-      dodge();
-    }
-  });
+  function maybeDodge(pointerX, pointerY) {
+    if (!$('screen-landing').classList.contains('active')) return;
+    const btnRect = btn.getBoundingClientRect();
+    const cx = btnRect.left + btnRect.width / 2;
+    const cy = btnRect.top + btnRect.height / 2;
+    const isNear = Math.hypot(pointerX - cx, pointerY - cy) < LANDING_DODGE_RADIUS;
+
+    if (!isNear) { landingPointerWasNear = false; return; }
+    // Only fire on the moment the pointer crosses INTO range, so one
+    // continuous mouse approach can't burn through both dodges at once.
+    if (landingPointerWasNear) return;
+    landingPointerWasNear = true;
+
+    if (landingDodgeCount >= LANDING_MAX_DODGES) return;
+    landingDodgeCount++;
+    dodgeAwayFrom(pointerX, pointerY);
+  }
+
+  // React while the pointer is still APPROACHING, not just once it's
+  // already on the button — by then it's too late to escape a click.
+  // Listens on the whole document (not just the small dodge-zone box) so
+  // the "pointer moved away" reset works no matter where the cursor goes.
+  document.addEventListener('mousemove', (e) => maybeDodge(e.clientX, e.clientY));
+  btn.addEventListener('mouseenter', (e) => maybeDodge(e.clientX, e.clientY));
 
   btn.addEventListener('click', goToLoading);
 }
@@ -1032,7 +1070,8 @@ function resetToLanding() {
   $('photo-img').style.display = 'block';
   $('photo-fallback').style.display = 'none';
 
-  $('btn-landing').style.transform = 'translate(-50%, -50%)';
+  hasSeekedToStart = false;
+  resetLandingButton();
 
   showScreen('screen-landing');
 }
